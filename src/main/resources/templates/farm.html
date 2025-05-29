@@ -8,5 +8,11 @@
 <h1>Добро пожаловать на ферму!</h1>
 <p>Случайный звук: <strong th:text="${sound}"></strong></p>
 <button onclick="window.location.reload()">Обновить</button>
+<p>
+    <a href="/admin"><button>Перейти в админку</button></a>
+</p>
+<form method="post" action="/logout">
+    <button type="submit">Выйти из системы</button>
+</form>
 </body>
 </html>

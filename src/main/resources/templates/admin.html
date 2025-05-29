@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель администратора</title>
+</head>
+<body>
+<h1>Добро пожаловать в панель администратора</h1>
+<form action="admin/add-sound" method="post">
+<!--  <input type="hidden" th:name="${_csrf.getParameterName()}" th:value="${_csrf.getToken()}">-->
+  <label for="name">Имя животного</label>
+  <input type="text" id="name" name="name" required>
+  <label for="sound">Звук</label>
+  <input type="text" id="sound" name="sound" required>
+  <button type="submit">Добавить</button>
+</form>
+
+<h2>Список звуков</h2>
+<ul>
+    <li th:each="animal : ${animals}" th:text="${animal.speak()}"></li>
+</ul>
+<p>
+    <a href="farm"><button>Вернуться на ферму</button></a>
+</p>
+<form method="post" action="/logout">
+    <button type="submit">Выйти из системы</button>
+</form>
+</body>
+</html>

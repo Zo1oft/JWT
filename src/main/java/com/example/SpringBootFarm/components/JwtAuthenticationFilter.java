@@ -17,9 +17,11 @@ import java.io.IOException;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final JwtTokenUtil jwtTokenUtil;
+    private final JwtCookieUtil jwtCookieUtil;
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil) {
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil, JwtCookieUtil jwtCookieUtil) {
         this.jwtTokenUtil = jwtTokenUtil;
+        this.jwtCookieUtil = jwtCookieUtil;
         setAuthenticationManager(authenticationManager);
         setFilterProcessesUrl("/api/auth/login");
     }
@@ -69,6 +71,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             Authentication authResult) throws IOException {
 
         String token = jwtTokenUtil.generateToken((UserDetails) authResult.getPrincipal());
+        Cookie cookie = jwtCookieUtil.createJwtCookie((UserDetails) authResult.getPrincipal());
 
         // Явно устанавливаем тип контента и статус
         response.setContentType("application/json");
@@ -83,7 +86,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         );
 
         //Добавляем токен в Cookie, чтобы видеть его в DevTools в Header
-        Cookie cookie = new Cookie("JWT", token);
+
         cookie.setHttpOnly(true);
         cookie.setSecure(true); // Для HTTPS
         cookie.setPath("/");

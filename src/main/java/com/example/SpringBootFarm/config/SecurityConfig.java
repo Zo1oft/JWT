@@ -2,6 +2,7 @@ package com.example.SpringBootFarm.config;
 
 import com.example.SpringBootFarm.components.JwtAuthenticationFilter;
 import com.example.SpringBootFarm.components.JwtAuthorizationFilter;
+import com.example.SpringBootFarm.components.JwtCookieUtil;
 import com.example.SpringBootFarm.components.JwtTokenUtil;
 import jakarta.servlet.http.Cookie;
 import org.springframework.context.annotation.Bean;
@@ -24,13 +25,15 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
     private final JwtTokenUtil jwtTokenUtil;
+    private final JwtCookieUtil jwtCookieUtil;
     private final UserDetailsService userDetailsService;
     private final AuthenticationConfiguration authConfig;
 
-    public SecurityConfig(JwtTokenUtil jwtTokenUtil,
+    public SecurityConfig(JwtTokenUtil jwtTokenUtil, JwtCookieUtil jwtCookieUtil,
                           UserDetailsService userDetailsService,
                           AuthenticationConfiguration authConfig) {
         this.jwtTokenUtil = jwtTokenUtil;
+        this.jwtCookieUtil = jwtCookieUtil;
         this.userDetailsService = userDetailsService;
         this.authConfig = authConfig;
     }
@@ -40,7 +43,7 @@ public class SecurityConfig {
         // Создаем AuthenticationManager правильно
         AuthenticationManager authManager = authenticationManager(authConfig);
 
-        JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter(authManager, jwtTokenUtil);
+        JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter(authManager, jwtTokenUtil, jwtCookieUtil);
         jwtAuthFilter.setFilterProcessesUrl("/api/auth/login");
 
         http // Разрешаем CORS (для взаимодействия с фронтендом)
@@ -63,15 +66,9 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .defaultSuccessUrl("/farm", true)
                         .successHandler((request, response, authentication) -> {
-                            // Генерируем JWT токен после успешного входа через форму
-                            String token = jwtTokenUtil.generateToken((UserDetails) authentication.getPrincipal());
-
-                            // Устанавливаем токен в куки
-                            Cookie cookie = new Cookie("JWT", token);
-                            cookie.setHttpOnly(true);
-                            cookie.setPath("/");
-                            response.addCookie(cookie);
-
+                            response.addCookie(jwtCookieUtil.createJwtCookie(
+                                    (UserDetails) authentication.getPrincipal()
+                            ));
                             response.sendRedirect("/farm");
                         })
                         .permitAll()

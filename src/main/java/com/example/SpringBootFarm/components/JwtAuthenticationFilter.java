@@ -58,39 +58,21 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
     }
 
-    /**
-     * Действия после успешной аутентификации:
-     * 1. Генерируем токен
-     * 2. Возвращаем его клиенту (в JSON или куки)
-     */
     @Override
-    protected void successfulAuthentication(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain chain,
-            Authentication authResult) throws IOException {
+    protected void successfulAuthentication(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            FilterChain chain,
+                                            Authentication authResult) throws IOException {
+        UserDetails userDetails = (UserDetails) authResult.getPrincipal();
+        String token = jwtTokenUtil.generateToken(userDetails);
 
-        String token = jwtTokenUtil.generateToken((UserDetails) authResult.getPrincipal());
-        Cookie cookie = jwtCookieUtil.createJwtCookie((UserDetails) authResult.getPrincipal());
+        // Добавляем JWT в куки
+        Cookie jwtCookie = jwtCookieUtil.createJwtCookie(userDetails);
+        response.addCookie(jwtCookie);
 
-        // Явно устанавливаем тип контента и статус
+        // Возвращаем токен в теле ответа
         response.setContentType("application/json");
-        response.setStatus(HttpServletResponse.SC_OK);
-
-        // Возвращаем JSON с токеном для API запросов
-        response.getWriter().write(
-                String.format("{\"token\":\"%s\", \"username\":\"%s\", \"roles\":\"%s\"}",
-                        token,
-                        ((UserDetails) authResult.getPrincipal()).getUsername(),
-                        authResult.getAuthorities())
-        );
-
-        //Добавляем токен в Cookie, чтобы видеть его в DevTools в Header
-
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true); // Для HTTPS
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        response.getWriter().write("{\"token\":\"" + token + "\"}");
         response.getWriter().flush();
     }
 }

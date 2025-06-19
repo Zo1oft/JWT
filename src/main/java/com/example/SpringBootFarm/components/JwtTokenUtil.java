@@ -83,21 +83,4 @@ public class JwtTokenUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
-    //Валидация токена по API
-    public boolean validateToken(String token, String username) {
-        final String tokenUsername = extractUsername(token);
-        return (username.equals(tokenUsername) && !isTokenExpired(token));
-    }
-
-    //Получение информации из токена по API
-    public Map<String, Object> getTokenInfo(String token) {
-        Claims claims = extractAllClaims(token);
-        Map<String, Object> tokenInfo = new HashMap<>();
-        tokenInfo.put("username", claims.getSubject());
-        tokenInfo.put("issuedAt", claims.getIssuedAt());
-        tokenInfo.put("expiration", claims.getExpiration());
-        tokenInfo.put("roles", claims.get("roles"));
-        return tokenInfo;
-    }
 }

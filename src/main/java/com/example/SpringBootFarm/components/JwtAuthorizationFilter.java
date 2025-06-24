@@ -30,12 +30,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws IOException, ServletException {
 
+        // Пропускаем публичные пути
         if (isPublicPath(request.getRequestURI())) {
             chain.doFilter(request, response);
             return;
         }
 
         try {
+            // Извлекаем токен из заголовка или куки
             String token = getTokenFromRequest(request);
             if (token != null && processToken(request, token)) {
                 chain.doFilter(request, response);
@@ -49,6 +51,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         sendUnauthorizedError(response, "Missing or invalid JWT token");
     }
 
+    //Проверяет, является ли запрошенный URI публичным (не требует аутентификации)
     private boolean isPublicPath(String requestURI) {
         for (String path : PUBLIC_PATHS) {
             if (requestURI.startsWith(path)) {
@@ -58,6 +61,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         return false;
     }
 
+    //Извлекает JWT-токен из запроса
     private String getTokenFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -76,6 +80,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         return null;
     }
 
+    //Проверяет токен и аутентифицирует пользователя
     private boolean processToken(HttpServletRequest request, String token) {
         String username = jwtTokenUtil.extractUsername(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -90,6 +95,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         return false;
     }
 
+    //Обрабатывает ошибки аутентификации
     private void handleAuthError(HttpServletResponse response,
                                  HttpServletRequest request,
                                  Exception e) throws IOException {
@@ -100,6 +106,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         }
     }
 
+    //Отправляет стандартизированную JSON-ошибку для API
     private void sendUnauthorizedError(HttpServletResponse response,
                                        String message) throws IOException {
         response.setContentType("application/json");

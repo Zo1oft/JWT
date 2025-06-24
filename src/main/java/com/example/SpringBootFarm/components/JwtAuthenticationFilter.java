@@ -3,7 +3,6 @@ package com.example.SpringBootFarm.components;
 import com.example.SpringBootFarm.dto.LoginRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,13 +16,10 @@ import java.io.IOException;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final JwtTokenUtil jwtTokenUtil;
-    private final JwtCookieUtil jwtCookieUtil;
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil, JwtCookieUtil jwtCookieUtil) {
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil) {
         this.jwtTokenUtil = jwtTokenUtil;
-        this.jwtCookieUtil = jwtCookieUtil;
         setAuthenticationManager(authenticationManager);
-        setFilterProcessesUrl("/api/auth/login");
     }
 
     /**
@@ -65,10 +61,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             Authentication authResult) throws IOException {
         UserDetails userDetails = (UserDetails) authResult.getPrincipal();
         String token = jwtTokenUtil.generateToken(userDetails);
-
-        // Добавляем JWT в куки
-        Cookie jwtCookie = jwtCookieUtil.createJwtCookie(userDetails);
-        response.addCookie(jwtCookie);
 
         // Возвращаем токен в теле ответа
         response.setContentType("application/json");

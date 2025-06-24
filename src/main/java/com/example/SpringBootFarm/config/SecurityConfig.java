@@ -43,7 +43,7 @@ public class SecurityConfig {
         // Создаем AuthenticationManager правильно
         AuthenticationManager authManager = authenticationManager(authConfig);
 
-        JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter(authManager, jwtTokenUtil, jwtCookieUtil);
+        JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter(authManager, jwtTokenUtil);
         jwtAuthFilter.setFilterProcessesUrl("/api/auth/login");
 
         http // Разрешаем CORS (для взаимодействия с фронтендом)
@@ -64,7 +64,6 @@ public class SecurityConfig {
                 )
                 .formLogin(login -> login
                         .loginPage("/login")
-                        .defaultSuccessUrl("/farm", true)
                         .successHandler((request, response, authentication) -> {
                             response.addCookie(jwtCookieUtil.createJwtCookie(
                                     (UserDetails) authentication.getPrincipal()

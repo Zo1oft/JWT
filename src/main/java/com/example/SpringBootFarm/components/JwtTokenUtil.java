@@ -34,7 +34,7 @@ public class JwtTokenUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", userDetails.getAuthorities().stream()
                 .map(a -> a.getAuthority().replace("ROLE_", ""))
-                .collect(Collectors.toList()));
+                .toList());
         return Jwts.builder()
                 .setClaims(claims) // Данные пользователя
                 .setSubject(userDetails.getUsername()) // Идентификатор
